@@ -88,14 +88,14 @@ export default function Home() {
       </section>
 
       {/* Carousel Section */}
-      <section className="py-20 pl-6 md:pl-20 border-t border-[#262626] overflow-hidden">
+      <section className="py-20 pl-6 md:pl-20 bg-white text-black overflow-hidden relative">
         <div className="mb-12 pr-6 md:pr-20 flex justify-between items-end">
-          <h2 className="font-serif text-3xl text-white">Nuestras Creaciones</h2>
+          <h2 className="font-serif text-3xl text-black">Nuestras Creaciones</h2>
           <div className="hidden md:flex gap-4">
-            <button className="w-12 h-12 border border-[#262626] rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-colors">
+            <button className="w-12 h-12 border border-black/10 rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-black">
               &larr;
             </button>
-            <button className="w-12 h-12 border border-[#262626] rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-colors">
+            <button className="w-12 h-12 border border-black/10 rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-colors text-black">
               &rarr;
             </button>
           </div>
@@ -107,18 +107,18 @@ export default function Home() {
               <div key={product.id} className="embla__slide flex-[0_0_85%] md:flex-[0_0_40%] min-w-0">
                 <Link href={product.href}>
                   <a className="group block">
-                    <div className="relative aspect-square overflow-hidden bg-[#111111] mb-6">
+                    <div className="relative aspect-square overflow-hidden bg-black mb-6">
                       <img 
                         src={product.image} 
                         alt={product.name} 
-                        className="object-cover w-full h-full opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 ease-in-out"
+                        className="object-cover w-full h-full opacity-100 group-hover:scale-105 transition-all duration-700 ease-in-out"
                       />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
                     </div>
                     <div className="flex justify-between items-center pr-4">
                       <div>
                         <p className="text-primary text-xs uppercase tracking-widest mb-2">{product.category}</p>
-                        <h3 className="font-serif text-2xl text-white group-hover:text-primary transition-colors">{product.name}</h3>
+                        <h3 className="font-serif text-2xl text-black group-hover:text-primary transition-colors">{product.name}</h3>
                       </div>
                     </div>
                   </a>
@@ -130,7 +130,7 @@ export default function Home() {
       </section>
 
       {/* Featured Single Product (Parallax) */}
-      <section className="relative h-[80vh] flex items-center justify-start overflow-hidden border-t border-[#262626]">
+      <section className="relative h-[80vh] flex items-center justify-start overflow-hidden bg-white text-black">
         <div 
           className="absolute inset-0 z-0 parallax"
           style={{ 
@@ -139,11 +139,11 @@ export default function Home() {
             backgroundSize: 'contain'
           }}
         />
-        <div className="absolute inset-0 z-10 bg-gradient-to-r from-background via-background/90 to-transparent" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-r from-white via-white/80 to-transparent" />
         
         <div className="relative z-20 px-6 md:px-20 max-w-2xl">
-          <h2 className="font-serif text-5xl md:text-6xl text-white mb-6">El Virutex</h2>
-          <p className="text-gray-400 font-light mb-10 text-lg leading-relaxed">
+          <h2 className="font-serif text-5xl md:text-6xl text-black mb-6">El Virutex</h2>
+          <p className="text-gray-600 font-light mb-10 text-lg leading-relaxed">
             Nuestra obra maestra. Reciclaje automatizado con una interfaz táctil de cristal zafiro y acabados en oro cepillado. La perfección no es una opción, es nuestro estándar.
           </p>
           <Link href="/product/virutex">
