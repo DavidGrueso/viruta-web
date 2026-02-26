@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Menu, Search, User, ShoppingCart, X } from "lucide-react";
 import {
   Sheet,
@@ -6,13 +6,46 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import virutex from "@/assets/images/virutex.png";
+import productSmall from "@/assets/images/product-small.png";
 
 export default function Navbar() {
+  const [, navigate] = useLocation();
   const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchRef = useRef<HTMLDivElement>(null);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem("recentSearches");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  const suggestions = [
+    { name: "Virutex", image: virutex, href: "/product/virutex" },
+    { name: "Viruta S1", image: productSmall, href: "/category/small" },
+  ];
+  const searchWidth = 320;
   const [showCart, setShowCart] = useState(false);
-  const [showUser, setShowUser] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSearch(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfile(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
 
   const categories = [
     { name: "Máquinas Pequeñas", href: "/category/small" },
@@ -58,20 +91,147 @@ export default function Navbar() {
 
           {/* Right: Icons */}
           <div className="flex-1 flex justify-end gap-6 text-white">
-            <button 
-              onClick={() => setShowSearch(true)} 
-              className="hover:text-primary transition-colors"
-              data-testid="button-search"
-            >
-              <Search strokeWidth={1.5} size={24} />
-            </button>
-            <button 
-              onClick={() => setShowUser(true)} 
-              className="hover:text-primary transition-colors"
-              data-testid="button-user"
-            >
-              <User strokeWidth={1.5} size={24} />
-            </button>
+            <div ref={searchRef} className="relative">
+            <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: showSearch ? searchWidth : 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="absolute right-0 top-0 h-full bg-[#222] rounded-md overflow-hidden flex items-center"
+              >
+                <input
+                  autoFocus
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && searchTerm.trim()) {
+                      const updated = [searchTerm.trim(), ...recentSearches.filter(r => r !== searchTerm.trim())].slice(0,5);
+                      setRecentSearches(updated);
+                      localStorage.setItem("recentSearches", JSON.stringify(updated));
+                      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+                      setShowSearch(false);
+                      setSearchTerm("");
+                    }
+                  }}
+                  placeholder="Buscar..."
+                  className="flex-grow bg-transparent text-white px-3 py-1 outline-none"
+                />
+              </motion.div>
+
+              <button
+                onClick={() => setShowSearch((v) => !v)}
+                className="hover:text-primary transition-colors"
+                data-testid="button-search"
+              >
+                <Search strokeWidth={1.5} size={24} />
+              </button>
+
+              {showSearch && (
+                <motion.div
+                  initial={{ opacity: 0, scaleY: 0 }}
+                  animate={{ opacity: 1, scaleY: 1 }}
+                  transition={{ duration: 0.25 }}
+                  style={{ transformOrigin: 'top' }}
+                  className="absolute right-0 top-full mt-2 bg-[#222] border border-white/10 rounded-lg shadow-lg z-50 p-4"
+                  layout
+                >
+                  <div style={{ width: searchWidth }} className="mx-auto">
+                  
+                    {recentSearches.length > 0 && (
+                      <div className="mb-4">
+                        <div className="text-xs text-gray-400 uppercase mb-1">Recientes</div>
+                        <ul className="space-y-2">
+                          {recentSearches.map((r) => (
+                            <li key={r} className="flex justify-between items-center text-white text-sm hover:text-primary">
+                              <span className="cursor-pointer" onClick={() => { navigate(`/search?q=${encodeURIComponent(r)}`); setShowSearch(false); }}>{r}</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const updated = recentSearches.filter(x => x !== r);
+                                  setRecentSearches(updated);
+                                  localStorage.setItem("recentSearches", JSON.stringify(updated));
+                                }}
+                                className="text-gray-400 hover:text-red-500 ml-2"
+                              >
+                                ×
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-xs text-gray-400 uppercase mb-1">Sugeridos</div>
+                      <ul className="space-y-2">
+                        {suggestions.map((s) => (
+                          <li key={s.name} className="flex items-center gap-4 hover:bg-white/5 p-2 rounded">
+                            <img src={s.image} alt={s.name} className="w-16 h-16 object-cover" />
+                            <Link href={s.href}><a className="text-white text-sm">{s.name}</a></Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+            <div ref={profileRef} className="relative">
+              <button
+                onClick={() => setShowProfile((v) => !v)}
+                className="hover:text-primary transition-colors"
+                data-testid="button-user"
+              >
+                <User strokeWidth={1.5} size={24} />
+              </button>
+
+              {showProfile && (
+                <motion.div
+                  initial={{ opacity: 0, scaleY: 0 }}
+                  animate={{ opacity: 1, scaleY: 1 }}
+                  transition={{ duration: 0.25 }}
+                  style={{ transformOrigin: 'top' }}
+                  className="absolute right-0 top-full mt-2 bg-[#222] border border-white/10 rounded-lg shadow-lg z-50 p-4"
+                  layout
+                >
+                  <div className="w-56">
+                    {isLoggedIn ? (
+                      <>
+                        <div className="mb-4">
+                          <p className="text-white font-light text-sm mb-3">¡Bienvenido de vuelta!</p>
+                          <Link href="/profile">
+                            <a className="block w-full bg-primary text-black py-2 px-4 rounded text-center hover:bg-primary/90 transition-colors font-medium text-sm">
+                              Ir a mi perfil
+                            </a>
+                          </Link>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setIsLoggedIn(false);
+                            setShowProfile(false);
+                          }}
+                          className="w-full border border-white/20 text-white py-2 px-4 rounded hover:border-white/40 transition-colors font-light text-sm"
+                        >
+                          Cerrar sesión
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-white font-light text-sm mb-4">Inicia sesión para acceder a tu perfil</p>
+                        <button
+                          onClick={() => {
+                            setIsLoggedIn(true);
+                            setShowProfile(false);
+                          }}
+                          className="w-full bg-primary text-black py-2 px-4 rounded hover:bg-primary/90 transition-colors font-medium text-sm"
+                        >
+                          Iniciar sesión
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </div>
             <button 
               onClick={() => setShowCart(true)} 
               className="hover:text-primary transition-colors relative"
@@ -84,28 +244,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Overlay Panels */}
-      <AnimatePresence>
-        {showSearch && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-6"
-          >
-            <button onClick={() => setShowSearch(false)} className="absolute top-10 right-10 text-white hover:text-primary">
-              <X size={32} />
-            </button>
-            <div className="w-full max-w-2xl">
-              <input 
-                autoFocus
-                type="text" 
-                placeholder="Buscar en la colección..." 
-                className="w-full bg-transparent border-b-2 border-primary text-3xl font-serif text-white outline-none pb-4 placeholder:text-gray-700"
-              />
-            </div>
-          </motion.div>
-        )}
 
         {showCart && (
           <motion.div 
@@ -131,32 +269,6 @@ export default function Navbar() {
           </motion.div>
         )}
 
-        {showUser && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
-          >
-            <div className="bg-[#111] border border-white/10 p-12 max-w-md w-full relative">
-              <button onClick={() => setShowUser(false)} className="absolute top-6 right-6 text-gray-400 hover:text-white">
-                <X size={20} />
-              </button>
-              <h2 className="text-3xl font-serif text-white text-center mb-10">Mi Cuenta</h2>
-              <div className="space-y-6">
-                <input type="email" placeholder="Email" className="w-full bg-black border border-white/10 p-3 text-white focus:border-primary outline-none transition-colors" />
-                <input type="password" placeholder="Contraseña" className="w-full bg-black border border-white/10 p-3 text-white focus:border-primary outline-none transition-colors" />
-                <button className="w-full bg-primary text-black py-4 uppercase tracking-widest text-sm font-medium">
-                  Iniciar Sesión
-                </button>
-                <p className="text-center text-gray-500 text-xs mt-6 underline cursor-pointer hover:text-primary transition-colors">
-                  ¿Olvidaste tu contraseña?
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 }

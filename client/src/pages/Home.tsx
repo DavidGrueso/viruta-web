@@ -1,13 +1,14 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import useEmblaCarousel from "embla-carousel-react";
+import React, { useEffect, useState } from "react";
 import heroBg from "@/assets/images/hero-bg.png";
 import productSmall from "@/assets/images/product-small.png";
 import productMedium from "@/assets/images/product-medium.png";
 import virutex from "@/assets/images/virutex.png";
 
 export default function Home() {
-  const [emblaRef] = useEmblaCarousel({ loop: true, align: "start" });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" }) as any;
 
   const products = [
     {
@@ -15,23 +16,50 @@ export default function Home() {
       name: "Viruta S1",
       category: "Máquina Pequeña",
       image: productSmall,
-      href: "/category/small"
+      href: "/category/small",
     },
     {
       id: 2,
       name: "El Virutex",
       category: "Edición Especial",
       image: virutex,
-      href: "/product/virutex"
+      href: "/product/virutex",
     },
     {
       id: 3,
       name: "Viruta M2",
       category: "Máquina Mediana",
       image: productMedium,
-      href: "/category/medium"
-    }
+      href: "/category/medium",
+    },
+    {
+      id: 4,
+      name: "Viruta S2",
+      category: "Máquina Pequeña",
+      image: productSmall,
+      href: "/category/small",
+    },
+    {
+      id: 5,
+      name: "Viruta M3",
+      category: "Máquina Mediana",
+      image: productMedium,
+      href: "/category/medium",
+    },
   ];
+
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const play = () => emblaApi?.scrollNext();
+    if (isPaused) return undefined as any;
+
+    const interval = setInterval(play, 4000);
+
+    return () => clearInterval(interval);
+  }, [emblaApi, isPaused]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,7 +83,7 @@ export default function Home() {
           >
             <h2 className="text-primary tracking-[0.2em] text-sm uppercase mb-4">La Evolución del Reciclaje</h2>
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white leading-tight mb-8">
-              Puro. <span className="italic text-gray-400">Minimalista.</span><br />
+              Fácil. <span className="italic text-gray-400">Minimalista.</span><br />
               Sostenible.
             </h1>
           </motion.div>
@@ -66,11 +94,56 @@ export default function Home() {
             transition={{ duration: 1, delay: 0.8 }}
           >
             <Link href="/product/virutex">
-              <a className="inline-block border border-primary text-primary px-10 py-4 hover:bg-primary hover:text-black transition-all duration-500 tracking-widest text-sm uppercase">
+              <a className="inline-block border border-primary text-primary px-10 py-4 rounded-full hover:bg-primary hover:text-black transition-all duration-500 tracking-widest text-sm uppercase">
                 Explorar la Colección
               </a>
             </Link>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Parallax Sections */}
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        <div
+          className="absolute inset-0 z-0 parallax"
+          style={{
+            backgroundImage: `url(${productMedium})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+          }}
+        />
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-white/70 via-white/30 to-transparent" />
+        <div className="relative z-20 text-center px-4 max-w-4xl mx-auto">
+          <h2 className="font-serif text-4xl text-black">Colección Mediana</h2>
+          <div className="mt-8">
+            <Link href="/category/medium">
+              <a className="inline-block border border-primary text-primary px-8 py-3 rounded-full hover:bg-primary hover:text-black transition-all duration-500 tracking-widest text-sm uppercase">
+                Ver colección
+              </a>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+        <div
+          className="absolute inset-0 z-0 parallax"
+          style={{
+            backgroundImage: `url(${virutex})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+          }}
+        />
+        <div className="absolute inset-0 z-10 bg-gradient-to-t from-white/70 via-white/30 to-transparent" />
+        <div className="relative z-20 text-center px-4 max-w-4xl mx-auto">
+          <h2 className="font-serif text-4xl text-black">El Virutex — Vista 360°</h2>
+          <div className="mt-8">
+            <Link href="/product/virutex">
+              <a className="inline-block border border-primary text-primary px-8 py-3 rounded-full hover:bg-primary hover:text-black transition-all duration-500 tracking-widest text-sm uppercase">
+                Explorar Virutex
+              </a>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -88,7 +161,7 @@ export default function Home() {
       </section>
 
       {/* Carousel Section */}
-      <section className="py-20 pl-6 md:pl-20 bg-white text-black overflow-hidden relative">
+      <section className="py-12 pl-6 md:pl-20 bg-white text-black overflow-hidden relative">
         <div className="mb-12 pr-6 md:pr-20 flex justify-between items-end">
           <h2 className="font-serif text-3xl text-black">Nuestras Creaciones</h2>
           <div className="hidden md:flex gap-4">
@@ -100,17 +173,18 @@ export default function Home() {
             </button>
           </div>
         </div>
+        {/* autoplay handled with React effect above */}
 
-        <div className="embla" ref={emblaRef}>
-          <div className="embla__container flex gap-8">
-            {products.map((product) => (
-              <div key={product.id} className="embla__slide flex-[0_0_85%] md:flex-[0_0_40%] min-w-0">
-                <Link href={product.href}>
-                  <a className="group block">
-                    <div className="relative aspect-square overflow-hidden bg-black mb-6">
-                      <img 
-                        src={product.image} 
-                        alt={product.name} 
+        <div className="relative" onMouseEnter={() => setIsPaused(true)} onMouseLeave={() => setIsPaused(false)}>
+          <div className="embla" ref={emblaRef}>
+            <div className="embla__container flex gap-8">
+              {products.map((product) => (
+                <div key={product.id} className="embla__slide flex-[0_0_85%] md:flex-[0_0_40%] min-w-0">
+                  <motion.div className="group block" whileHover={{ scale: 1.02 }} transition={{ duration: 0.3 }}>
+                    <div className="relative h-64 md:h-80 lg:h-96 overflow-hidden bg-black mb-6">
+                      <img
+                        src={product.image}
+                        alt={product.name}
                         className="object-cover w-full h-full opacity-100 group-hover:scale-105 transition-all duration-700 ease-in-out"
                       />
                       <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
@@ -121,10 +195,37 @@ export default function Home() {
                         <h3 className="font-serif text-2xl text-black group-hover:text-primary transition-colors">{product.name}</h3>
                       </div>
                     </div>
-                  </a>
-                </Link>
-              </div>
-            ))}
+                    <div className="mt-4 text-center">
+                      <Link href={product.href}>
+                        <a className="inline-block border border-primary text-primary px-6 py-2 rounded-full hover:bg-primary hover:text-black transition-all duration-300 text-sm uppercase">
+                          Descubrir más
+                        </a>
+                      </Link>
+                    </div>
+                  </motion.div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* manual arrows */}
+          <div className="absolute inset-y-0 left-0 flex items-center pl-4">
+            <button
+              onClick={() => emblaApi?.scrollPrev()}
+              className="w-12 h-12 bg-white/80 text-black rounded-full flex items-center justify-center shadow-md hover:bg-white transition"
+              aria-label="Anterior"
+            >
+              ‹
+            </button>
+          </div>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+            <button
+              onClick={() => emblaApi?.scrollNext()}
+              className="w-12 h-12 bg-white/80 text-black rounded-full flex items-center justify-center shadow-md hover:bg-white transition"
+              aria-label="Siguiente"
+            >
+              ›
+            </button>
           </div>
         </div>
       </section>
